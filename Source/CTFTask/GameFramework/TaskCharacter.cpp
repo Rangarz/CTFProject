@@ -12,6 +12,7 @@
 #include "MotionControllerComponent.h"
 #include "XRMotionControllerBase.h" // for FXRMotionControllerBase::RightHandSourceId
 #include "Net/UnrealNetwork.h"
+#include "Components/WidgetComponent.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogFPChar, Warning, All);
 
@@ -115,6 +116,9 @@ void ACTFTaskCharacter::BeginPlay()
 	// Call the base class  
 	Super::BeginPlay();
 
+	//Set Health to initial value
+	Health = 100.0f;
+
 	//Attach gun mesh component to Skeleton, doing it here because the skeleton is not yet created in the constructor
 	FP_Gun->AttachToComponent(Mesh1P, FAttachmentTransformRules(EAttachmentRule::SnapToTarget, true), TEXT("GripPoint"));
 
@@ -141,6 +145,7 @@ void ACTFTaskCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(ACTFTaskCharacter, CameraRotation);
+	DOREPLIFETIME(ACTFTaskCharacter, Health);
 }
 
 void ACTFTaskCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent)
@@ -306,7 +311,10 @@ void ACTFTaskCharacter::FireProjectile(const FVector& SpawnLocation, const FRota
 
 void ACTFTaskCharacter::ServerFireProjectile_Implementation(const FVector& SpawnLocation, const FRotator& SpawnRotation)
 {
-	FireProjectile(SpawnLocation, SpawnRotation);
+	if(CanShoot())
+	{
+		FireProjectile(SpawnLocation, SpawnRotation);
+	}
 }
 
 bool ACTFTaskCharacter::ServerFireProjectile_Validate(const FVector& SpawnLocation, const FRotator& SpawnRotation)
@@ -324,10 +332,43 @@ void ACTFTaskCharacter::ServerCameraSyncRotation_Implementation(const FRotator& 
 	CameraRotation = Rotation;
 }
 
-void ACTFTaskCharacter::CameraRotationChanged(const FRotator& Rotation)
+void ACTFTaskCharacter::OnCameraRotationChanged(const FRotator& Rotation)
 {
 	if (!IsLocallyControlled())
 	{
 		FirstPersonCameraComponent->SetRelativeRotation(Rotation);
 	}
+}
+
+void ACTFTaskCharacter::OnHealthChanged()
+{
+	HealthChangedCallback(Health);
+}
+
+void ACTFTaskCharacter::AddHealthPoints(float Amount)
+{
+	if(GetLocalRole() == ROLE_Authority)
+	{
+		float TempHealth = Health + Amount;
+
+		if (TempHealth > 100.0f)
+		{
+			Health = 100.0f;
+		}
+		else if (TempHealth < 0.0f)
+		{
+			Health = 0.0f;
+		}
+		else
+		{
+			Health += Amount;
+		}
+
+		HealthChangedCallback(Health);
+	}
+}
+
+bool ACTFTaskCharacter::CanShoot()
+{
+	return Health > 0.0f;
 }

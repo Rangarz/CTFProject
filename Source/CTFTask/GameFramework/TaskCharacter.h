@@ -13,13 +13,6 @@ class ACTFTaskCharacter : public ACharacter
 {
 	GENERATED_BODY()
 
-	/** Pawn mesh: 1st person view (arms; seen only by self) */
-	UPROPERTY(VisibleDefaultsOnly, Category=Mesh)
-	class USkeletalMeshComponent* Mesh1P;
-
-	/** Gun mesh: 1st person view (seen only by self) */
-	UPROPERTY(VisibleDefaultsOnly, Category = Mesh)
-	class USkeletalMeshComponent* FP_Gun;
 
 	/** Location on gun mesh where projectiles should spawn. */
 	UPROPERTY(VisibleDefaultsOnly, Category = Mesh)
@@ -32,14 +25,6 @@ class ACTFTaskCharacter : public ACharacter
 	/** Location on VR gun mesh where projectiles should spawn. */
 	UPROPERTY(VisibleDefaultsOnly, Category = Mesh)
 	class USceneComponent* VR_MuzzleLocation;
-
-
-	/* Third Person Mesh */
-	UPROPERTY(VisibleDefaultsOnly, Category = Mesh)
-	class USkeletalMeshComponent* TP_Body;
-
-	UPROPERTY(VisibleDefaultsOnly, Category = Mesh)
-	class USkeletalMeshComponent* TP_Gun;
 
 
 	/** First person camera */
@@ -90,9 +75,29 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
 	uint32 bUsingMotionControllers : 1;
 
+	/*Third Person Mesh*/
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = Mesh)
+	class USkeletalMeshComponent* TP_Body;
+
+	/*Third Person Gun*/
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = Mesh)
+	class USkeletalMeshComponent* TP_Gun;
+
+	/** Gun mesh: 1st person view (seen only by self) */
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = Mesh)
+	class USkeletalMeshComponent* FP_Gun;
+
+	/** Pawn mesh: 1st person view (arms; seen only by self) */
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = Mesh)
+	class USkeletalMeshComponent* Mesh1P;
+
+
 	/* Camera Rotation Sync */
-	UPROPERTY(ReplicatedUsing = CameraRotationChanged, VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
+	UPROPERTY(ReplicatedUsing = OnCameraRotationChanged, VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
 	FRotator CameraRotation;
+
+	UPROPERTY(ReplicatedUsing = OnHealthChanged, VisibleAnywhere, BlueprintReadOnly, Category = "Stats")
+	float Health;
 
 
 protected:
@@ -164,13 +169,29 @@ public:
 
 	void FireProjectile(const FVector& SpawnLocation, const FRotator& SpawnRotation);
 
+	UFUNCTION(BlueprintCallable)
+	bool CanShoot();
+
 	//Sync Camera Rotation
 	UFUNCTION(Server, Reliable)
 	void ServerCameraSyncRotation(const FRotator& Rotation);
 
 
 	UFUNCTION()
-	void CameraRotationChanged(const FRotator& Rotation);
+	void OnCameraRotationChanged(const FRotator& Rotation);
+	
+
+	//HP
+
+	UFUNCTION()
+	void OnHealthChanged();
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void HealthChangedCallback(const float& NewHealth);
+
+	UFUNCTION(BlueprintCallable)
+	void AddHealthPoints(float Amount);
+
 
 };
 
