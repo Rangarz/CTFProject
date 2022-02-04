@@ -99,6 +99,9 @@ public:
 	UPROPERTY(ReplicatedUsing = OnHealthChanged, VisibleAnywhere, BlueprintReadOnly, Category = "Stats")
 	float Health;
 
+	UPROPERTY(Replicated, VisibleAnywhere, BlueprintReadWrite, Category = Gameplay)
+	bool bCanShoot;
+
 
 protected:
 	

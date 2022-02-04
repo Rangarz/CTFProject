@@ -24,6 +24,9 @@ ACTFTaskCharacter::ACTFTaskCharacter()
 	//Set Replicated to true
 	bReplicates = true;
 
+	//Player can shoot
+	bCanShoot = true;
+
 	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(55.f, 96.0f);
 
@@ -146,6 +149,7 @@ void ACTFTaskCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
 
 	DOREPLIFETIME(ACTFTaskCharacter, CameraRotation);
 	DOREPLIFETIME(ACTFTaskCharacter, Health);
+	DOREPLIFETIME(ACTFTaskCharacter, bCanShoot);
 }
 
 void ACTFTaskCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent)
@@ -370,5 +374,5 @@ void ACTFTaskCharacter::AddHealthPoints(float Amount)
 
 bool ACTFTaskCharacter::CanShoot()
 {
-	return Health > 0.0f;
+	return Health > 0.0f && bCanShoot;
 }
