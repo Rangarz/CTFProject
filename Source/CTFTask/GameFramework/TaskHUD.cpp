@@ -10,7 +10,6 @@
 
 ATaskHUD::ATaskHUD()
 {
-
 }
 
 
