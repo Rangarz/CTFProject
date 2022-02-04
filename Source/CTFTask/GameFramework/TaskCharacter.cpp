@@ -310,7 +310,11 @@ void ACTFTaskCharacter::FireProjectile(const FVector& SpawnLocation, const FRota
 				ActorSpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButDontSpawnIfColliding;
 
 				// spawn the projectile at the muzzle
-				World->SpawnActor<ACTFTaskProjectile>(Projectile, SpawnLocation, SpawnRotation, ActorSpawnParams);
+				ACTFTaskProjectile* SpawnedProjectile = World->SpawnActor<ACTFTaskProjectile>(Projectile, SpawnLocation, SpawnRotation, ActorSpawnParams);
+				if(SpawnedProjectile != NULL)
+				{
+					SpawnedProjectile->ProjectileShooter = this;
+				}
 			}
 		}
 	}

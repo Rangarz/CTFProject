@@ -58,7 +58,7 @@ void ACTFTaskProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor,
 {
 	ACTFTaskCharacter* TaskCharacter = Cast<ACTFTaskCharacter>(OtherActor);
 
-	if (OtherActor != NULL && TaskCharacter != NULL)
+	if (OtherActor != NULL && TaskCharacter != NULL && TaskCharacter != ProjectileShooter)
 	{
 		//Only projectiles spawned by server and on server will affect health
 		if(GetLocalRole() == ROLE_Authority && bFakeProjectile == false)

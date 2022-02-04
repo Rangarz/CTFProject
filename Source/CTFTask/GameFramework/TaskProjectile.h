@@ -33,6 +33,11 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
 	bool bFakeProjectile;
 
+	/* Shooter of the projectile*/
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Gameplay)
+	class ACTFTaskCharacter* ProjectileShooter;
+
+
 	/** called when projectile hits something */
 	UFUNCTION()
 	void OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
