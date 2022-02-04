@@ -12,7 +12,6 @@
 #include "MotionControllerComponent.h"
 #include "XRMotionControllerBase.h" // for FXRMotionControllerBase::RightHandSourceId
 #include "Net/UnrealNetwork.h"
-#include "Components/WidgetComponent.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogFPChar, Warning, All);
 
@@ -201,6 +200,8 @@ void ACTFTaskCharacter::OnFire()
 			}
 		}
 
+		FireProjectile(SpawnLocation, SpawnRotation, FakeProjectileClass);
+
 		ServerFireProjectile(SpawnLocation, SpawnRotation);
 	}
 }
@@ -284,10 +285,10 @@ bool ACTFTaskCharacter::EnableTouchscreenMovement(class UInputComponent* PlayerI
 }
 
 
-void ACTFTaskCharacter::FireProjectile(const FVector& SpawnLocation, const FRotator& SpawnRotation)
+void ACTFTaskCharacter::FireProjectile(const FVector& SpawnLocation, const FRotator& SpawnRotation,const TSubclassOf<class ACTFTaskProjectile>& Projectile)
 {
 	// try and fire a projectile
-	if (ProjectileClass != NULL)
+	if (Projectile != NULL)
 	{
 		UWorld* const World = GetWorld();
 		if (World != NULL)
@@ -296,7 +297,7 @@ void ACTFTaskCharacter::FireProjectile(const FVector& SpawnLocation, const FRota
 			{
 				//const FRotator SpawnRotation = VR_MuzzleLocation->GetComponentRotation();
 				//const FVector SpawnLocation = VR_MuzzleLocation->GetComponentLocation();
-				World->SpawnActor<ACTFTaskProjectile>(ProjectileClass, SpawnLocation, SpawnRotation);
+				World->SpawnActor<ACTFTaskProjectile>(Projectile, SpawnLocation, SpawnRotation);
 			}
 			else
 			{
@@ -309,7 +310,7 @@ void ACTFTaskCharacter::FireProjectile(const FVector& SpawnLocation, const FRota
 				ActorSpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButDontSpawnIfColliding;
 
 				// spawn the projectile at the muzzle
-				World->SpawnActor<ACTFTaskProjectile>(ProjectileClass, SpawnLocation, SpawnRotation, ActorSpawnParams);
+				World->SpawnActor<ACTFTaskProjectile>(Projectile, SpawnLocation, SpawnRotation, ActorSpawnParams);
 			}
 		}
 	}
@@ -319,7 +320,7 @@ void ACTFTaskCharacter::ServerFireProjectile_Implementation(const FVector& Spawn
 {
 	if(CanShoot())
 	{
-		FireProjectile(SpawnLocation, SpawnRotation);
+		FireProjectile(SpawnLocation, SpawnRotation, ProjectileClass);
 	}
 }
 
@@ -330,7 +331,7 @@ bool ACTFTaskCharacter::ServerFireProjectile_Validate(const FVector& SpawnLocati
 
 void ACTFTaskCharacter::MulticastFireProjectile_Implementation(const FVector& SpawnLocation, const FRotator& SpawnRotation)
 {
-	FireProjectile(SpawnLocation, SpawnRotation);
+	FireProjectile(SpawnLocation, SpawnRotation, ProjectileClass);
 }
 
 void ACTFTaskCharacter::ServerCameraSyncRotation_Implementation(const FRotator& Rotation)
@@ -369,7 +370,6 @@ void ACTFTaskCharacter::AddHealthPoints(float Amount)
 		{
 			Health += Amount;
 		}
-
 		HealthChangedCallback(Health);
 	}
 }

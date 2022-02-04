@@ -63,6 +63,10 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category=Projectile)
 	TSubclassOf<class ACTFTaskProjectile> ProjectileClass;
 
+	/** Projectile class to spawn */
+	UPROPERTY(EditDefaultsOnly, Category = Projectile)
+	TSubclassOf<class ACTFTaskProjectile> FakeProjectileClass;
+
 	/** Sound to play each time we fire */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Gameplay)
 	class USoundBase* FireSound;
@@ -170,7 +174,7 @@ public:
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastFireProjectile(const FVector& SpawnLocation, const FRotator& SpawnRotation);
 
-	void FireProjectile(const FVector& SpawnLocation, const FRotator& SpawnRotation);
+	void FireProjectile(const FVector& SpawnLocation, const FRotator& SpawnRotation, const TSubclassOf<class ACTFTaskProjectile>& Projectile);
 
 	UFUNCTION(BlueprintCallable)
 	bool CanShoot();
@@ -195,6 +199,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void AddHealthPoints(float Amount);
 
+	//Hit
 
+	UFUNCTION(BlueprintImplementableEvent)
+	void IsHit();
 };
 

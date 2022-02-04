@@ -37,8 +37,18 @@ ACTFTaskProjectile::ACTFTaskProjectile()
 void ACTFTaskProjectile::BeginPlay()
 {
 	Super::BeginPlay();
-	// try and play the sound if specified
-	if (FireSound != NULL)
+
+
+	//Only spawner of this projectile can check for collisions
+	if (GetLocalRole() != ROLE_Authority)
+	{
+		CollisionComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	}
+
+
+
+	//Only spawner of this projectile hears its sound
+	if (GetLocalRole() == ROLE_Authority && FireSound != NULL)
 	{
 		UGameplayStatics::PlaySoundAtLocation(this, FireSound, GetActorLocation());
 	}
@@ -50,7 +60,8 @@ void ACTFTaskProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor,
 
 	if (OtherActor != NULL && TaskCharacter != NULL)
 	{
-		if(GetLocalRole() == ROLE_Authority)
+		//Only projectiles spawned by server and on server will affect health
+		if(GetLocalRole() == ROLE_Authority && bFakeProjectile == false)
 		{
 			UKismetSystemLibrary::PrintString(this->GetWorld(), "Collided with player", true, true, FColor::Blue, 2.0f);
 
@@ -58,13 +69,29 @@ void ACTFTaskProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor,
 
 			Destroy();
 		}
+
+		//If fake projectile hits character, must destroy
+		if (bFakeProjectile == true)
+		{
+			TaskCharacter->IsHit();
+			Destroy();
+		}
 	}
 	else
 	{
 		// Only add impulse and destroy projectile if we hit a physics
-		if ((OtherActor != NULL) && (OtherActor != this) && (OtherComp != NULL) && OtherComp->IsSimulatingPhysics())
+		if ((OtherActor != NULL) && (OtherActor != this) && (OtherComp != NULL))
 		{
-			OtherComp->AddImpulseAtLocation(GetVelocity() * 100.0f, GetActorLocation());
+			//Only a real projectile can affect other actors
+			if (OtherComp->IsSimulatingPhysics() && bFakeProjectile == false)
+			{
+				OtherComp->AddImpulseAtLocation(GetVelocity() * 100.0f, GetActorLocation());
+			}
+
+			if(bFakeProjectile)
+			{
+				UKismetSystemLibrary::PrintString(this->GetWorld(), "Destroying projectile", true, true, FColor::Blue, 2.0f);
+			}
 
 			Destroy();
 		}

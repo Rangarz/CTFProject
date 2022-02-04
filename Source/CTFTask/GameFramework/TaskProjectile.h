@@ -29,6 +29,10 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
 	class USoundBase* FireSound;
 
+	/** Is Fake Projectile */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
+	bool bFakeProjectile;
+
 	/** called when projectile hits something */
 	UFUNCTION()
 	void OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
