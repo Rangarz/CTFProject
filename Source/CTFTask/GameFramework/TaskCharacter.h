@@ -166,8 +166,10 @@ public:
 	FORCEINLINE class UCameraComponent* GetFirstPersonCameraComponent() const { return FirstPersonCameraComponent; }
 
 
-	//Projectile
+	
 public:
+	//Projectile
+
 	UFUNCTION(Server, Reliable, WithValidation)
 	void ServerFireProjectile(const FVector& SpawnLocation, const FRotator& SpawnRotation);
 	
@@ -203,5 +205,11 @@ public:
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void IsHit();
+
+
+	//GameFlow
+
+	UFUNCTION(Server, Reliable)
+	void ServerPlayerIsReadyNotify();
 };
 

@@ -12,6 +12,7 @@
 #include "MotionControllerComponent.h"
 #include "XRMotionControllerBase.h" // for FXRMotionControllerBase::RightHandSourceId
 #include "Net/UnrealNetwork.h"
+#include "TaskGameModeGameplay.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogFPChar, Warning, All);
 
@@ -137,6 +138,14 @@ void ACTFTaskCharacter::BeginPlay()
 	{
 		VR_Gun->SetHiddenInGame(true, true);
 		Mesh1P->SetHiddenInGame(false, true);
+	}
+
+
+	if (IsLocallyControlled())
+	{
+		ServerPlayerIsReadyNotify();
+
+
 	}
 }
 //////////////////////////////////////////////////////////////////////////
@@ -381,4 +390,14 @@ void ACTFTaskCharacter::AddHealthPoints(float Amount)
 bool ACTFTaskCharacter::CanShoot()
 {
 	return Health > 0.0f && bCanShoot;
+}
+
+void ACTFTaskCharacter::ServerPlayerIsReadyNotify_Implementation()
+{
+	ATaskGameModeGameplay * GameMode = (ATaskGameModeGameplay *)GetWorld()->GetAuthGameMode();
+	
+	if(GameMode != nullptr)
+	{
+		GameMode->InstanceReady();
+	}
 }
