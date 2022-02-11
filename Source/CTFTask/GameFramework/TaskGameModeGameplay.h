@@ -30,11 +30,13 @@ public:
 	//Flag Logic
 	void PlayerFlagInteract(AActor* Player, AActor* Flag);
 
-	void PlayerDeathHandling(AActor* Player);
-
 	//Base Logic
 	void PlayerBaseInteract(AActor* Player, AActor* Base);
 
-	//Game Over Handling
+	//Game Flow Handling
+
+	void PlayersInitializeLocation();
+	void PlayerDeathHandling(class ACTFTaskCharacter* Player);
+	void PlayerRespawnHandling(class ACTFTaskCharacter* Player);
 	void GameOverHandling();
 };

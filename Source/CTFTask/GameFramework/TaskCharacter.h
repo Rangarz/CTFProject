@@ -39,6 +39,12 @@ class ACTFTaskCharacter : public ACharacter
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	class UMotionControllerComponent* L_MotionController;
 
+	UPROPERTY()
+	class ATaskHUD * PlayerHud;
+
+	UPROPERTY()
+	class ATaskGameModeGameplay* GameMode;
+
 public:
 	ACTFTaskCharacter();
 
@@ -75,6 +81,24 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
 	class UAnimMontage* FireAnimation;
 
+	/** AnimMontage to play each time we get hit */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
+	class UAnimMontage* HitAnimation;
+
+	//Materials for team coloring	
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Materials)
+	UMaterial* RedBodyMaterial;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Materials)
+	UMaterial* BlueBodyMaterial;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Materials)
+	UMaterial* RedFlagMaterial;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Materials)
+	UMaterial* BlueFlagMaterial;
+
 	/** Whether to use motion controller location for aiming. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
 	uint32 bUsingMotionControllers : 1;
@@ -95,6 +119,12 @@ public:
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = Mesh)
 	class USkeletalMeshComponent* Mesh1P;
 
+	/*Third Person Mesh*/
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = Mesh)
+	class USkeletalMeshComponent* TP_Ragdoll;
+
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = Mesh)
+	class UStaticMeshComponent* Flag_Prop;
 
 	/* Camera Rotation Sync */
 	UPROPERTY(ReplicatedUsing = OnCameraRotationChanged, VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
@@ -201,15 +231,33 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void AddHealthPoints(float Amount);
 
-	//Hit
+	//Player
 
-	UFUNCTION(BlueprintImplementableEvent)
+	UFUNCTION()
 	void IsHit();
 
+
+	UFUNCTION(BlueprintCallable)
+	void RagdollEffect(bool IsTrue);
+
+	UFUNCTION()
+	void LocalDeath(bool IsDead);
+
+	UFUNCTION()
+	void RemoteDeath();
+
+	UFUNCTION()
+	void RemoteRespawn();
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastRespawnPlayer();
 
 	//GameFlow
 
 	UFUNCTION(Server, Reliable)
 	void ServerPlayerIsReadyNotify();
+
+	UFUNCTION()
+	void InitializePlayer();
 };
 

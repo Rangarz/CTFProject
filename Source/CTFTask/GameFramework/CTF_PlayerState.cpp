@@ -3,7 +3,7 @@
 
 #include "CTF_PlayerState.h"
 #include "Net/UnrealNetwork.h"
-
+#include "TaskCharacter.h"
 
 void ACTF_PlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty> &OutLifetimeProps) const
 {
@@ -15,5 +15,7 @@ void ACTF_PlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty> &Out
 
 void ACTF_PlayerState::OnTeamChanged()
 {
-	
+	//Inform client to initialize itself
+	ACTFTaskCharacter * PlayerCharacter = (ACTFTaskCharacter *)GetPawn();
+	PlayerCharacter->InitializePlayer();
 }

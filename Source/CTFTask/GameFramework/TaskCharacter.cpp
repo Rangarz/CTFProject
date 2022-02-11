@@ -13,6 +13,8 @@
 #include "XRMotionControllerBase.h" // for FXRMotionControllerBase::RightHandSourceId
 #include "Net/UnrealNetwork.h"
 #include "TaskGameModeGameplay.h"
+#include "TaskHUD.h"
+#include "CTF_PlayerState.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogFPChar, Warning, All);
 
@@ -83,6 +85,18 @@ ACTFTaskCharacter::ACTFTaskCharacter()
 
 
 
+	TP_Ragdoll = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("TP_Ragdoll"));
+	TP_Ragdoll->SetOnlyOwnerSee(false);
+	TP_Ragdoll->SetOwnerNoSee(true);
+	TP_Ragdoll->SetupAttachment(GetCapsuleComponent());
+	TP_Ragdoll->bCastDynamicShadow = false;
+	TP_Ragdoll->CastShadow = false;
+	TP_Ragdoll->SetRelativeRotation(FRotator(0.0f, 0.0f, -90.0f));
+	TP_Ragdoll->SetRelativeLocation(FVector(-90.0f, 0.0f, 0.0f));
+
+	Flag_Prop = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Flag_Prop"));
+	Flag_Prop->SetupAttachment(GetCapsuleComponent());
+
 	// Default offset from the character location for projectiles to spawn
 	GunOffset = FVector(100.0f, 0.0f, 10.0f);
 
@@ -140,13 +154,20 @@ void ACTFTaskCharacter::BeginPlay()
 		Mesh1P->SetHiddenInGame(false, true);
 	}
 
+	//Initialize GameMode
+	GameMode = (ATaskGameModeGameplay*)GetWorld()->GetAuthGameMode();
 
 	if (IsLocallyControlled())
 	{
+		//Notify server that this player is ready
 		ServerPlayerIsReadyNotify();
 
-
+		//Get HUD
+		APlayerController* PC = UGameplayStatics::GetPlayerController(this, 0);
+		PlayerHud = (ATaskHUD* )PC->GetHUD();
 	}
+
+	InitializePlayer();
 }
 //////////////////////////////////////////////////////////////////////////
 // Input
@@ -362,7 +383,25 @@ void ACTFTaskCharacter::OnCameraRotationChanged(const FRotator& Rotation)
 
 void ACTFTaskCharacter::OnHealthChanged()
 {
-	HealthChangedCallback(Health);
+	if (IsLocallyControlled())
+	{
+		PlayerHud->UpdateHealth(Health / 100.0f);
+
+		//Check if player is dead
+		if (Health <= 0.0f)
+		{
+			RemoteDeath();
+			LocalDeath(true);
+		}
+	}
+	else
+	{
+		//Check if player is dead
+		if (Health <= 0.0f)
+		{
+			RemoteDeath();
+		}
+	}
 }
 
 void ACTFTaskCharacter::AddHealthPoints(float Amount)
@@ -393,11 +432,140 @@ bool ACTFTaskCharacter::CanShoot()
 }
 
 void ACTFTaskCharacter::ServerPlayerIsReadyNotify_Implementation()
-{
-	ATaskGameModeGameplay * GameMode = (ATaskGameModeGameplay *)GetWorld()->GetAuthGameMode();
-	
+{	
 	if(GameMode != nullptr)
 	{
 		GameMode->InstanceReady();
+	}
+}
+
+
+void ACTFTaskCharacter::RagdollEffect(bool IsTrue)
+{
+	//Reset Ragdoll Location
+	TP_Ragdoll->SetWorldTransform(GetActorTransform());
+
+	TP_Ragdoll->SetVisibility(IsTrue);
+	TP_Ragdoll->SetAllBodiesSimulatePhysics(IsTrue);
+
+	//Propogate to affect the gun
+	TP_Body->SetVisibility(!IsTrue, true);
+}
+
+/*This is what the player will do locally to their own character on death*/
+void ACTFTaskCharacter::LocalDeath(bool IsDead)
+{
+	Mesh1P->SetOwnerNoSee(IsDead);
+	FP_Gun->SetOwnerNoSee(IsDead);
+
+	if (IsDead)
+	{
+		if (PlayerHud != nullptr)
+		{
+			PlayerHud->ShowScreenUI(IsDead);
+			PlayerHud->ShowCursor(IsDead);
+		}
+	}
+}
+/*This is what other remote clients see on character death including server*/
+void ACTFTaskCharacter::RemoteDeath()
+{
+	RagdollEffect(true);
+
+	if (GetLocalRole() == ROLE_Authority)
+	{
+		//Tell game mode about this death
+		if (GameMode != nullptr)
+		{
+			GameMode->PlayerDeathHandling(this);
+		}
+		//Stop player from being able to move
+		//GetCharacterMovement()->DisableMovement();
+		//Respawn player in 3 seconds
+
+		//FTimerHandle UnusedHandle;
+		//GetWorldTimerManager().SetTimer(UnusedHandle, this, &ACTFTaskCharacter::RemoteRespawn, 3.0f, false);
+
+	}
+}
+/*This is how the server respawns a player*/
+
+void ACTFTaskCharacter::RemoteRespawn()
+{
+/*
+	//Enable Movement
+	GetCharacterMovement()->SetMovementMode(MOVE_Walking);
+	//Adjust health
+	AddHealthPoints(100.0f);
+	//Turn off ragdoll on server
+	RagdollEffect(false);
+	//Tell clients to setup client-side respawn
+	MulticastRespawnPlayer();
+	//Teleport player to the correct position
+	ACTF_PlayerState* PS = (ACTF_PlayerState* )GetPlayerState();
+	if (PS)
+	{
+		if (PS->IsTeamA)
+		{
+			//Teleport player to Team A's Spawn Point
+			SetActorLocation(FVector(-1360, 1110, 200), false, nullptr, ETeleportType::TeleportPhysics);
+		}
+		else
+		{
+			//Teleport player to Team B's Spawn Point
+			SetActorLocation(FVector(1220.0, -1040, 200), false, nullptr, ETeleportType::TeleportPhysics);
+		}
+	}
+*/
+}
+
+void ACTFTaskCharacter::MulticastRespawnPlayer_Implementation()
+{
+	//Turn off ragdoll for this client-side
+	RagdollEffect(false);
+	
+	if (IsLocallyControlled())
+	{
+		//Disable local death on locally controlled player
+		LocalDeath(false);
+	}
+}
+
+void ACTFTaskCharacter::IsHit()
+{
+	if (IsLocallyControlled() == false)
+	{
+		if (HitAnimation != NULL)
+		{
+			// Get the animation object for the arms mesh
+			UAnimInstance* AnimInstance = TP_Body->GetAnimInstance();
+			if (AnimInstance != NULL)
+			{
+				AnimInstance->Montage_Play(HitAnimation, 2.f);
+			}
+		}
+	}
+}
+
+void ACTFTaskCharacter::InitializePlayer()
+{
+	ACTF_PlayerState* PS = (ACTF_PlayerState*)GetPlayerState();
+	
+	if(PS)
+	{
+		if (PS->IsTeamA)
+		{
+			//Apply Materials
+			TP_Body->SetMaterial(0, RedBodyMaterial);
+			TP_Ragdoll->SetMaterial(0, RedBodyMaterial);
+			Flag_Prop->SetMaterial(0, BlueFlagMaterial);
+		}
+		else
+		{
+			//Apply Materials
+			TP_Body->SetMaterial(0, BlueBodyMaterial);
+			TP_Ragdoll->SetMaterial(0, BlueBodyMaterial);
+			Flag_Prop->SetMaterial(0, RedFlagMaterial);
+		}
 	}
 }

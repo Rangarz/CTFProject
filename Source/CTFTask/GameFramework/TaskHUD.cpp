@@ -7,6 +7,7 @@
 #include "TextureResource.h"
 #include "CanvasItem.h"
 #include "UObject/ConstructorHelpers.h"
+#include "CTF_GameState.h"
 
 ATaskHUD::ATaskHUD()
 {
@@ -15,29 +16,87 @@ ATaskHUD::ATaskHUD()
 
 void ATaskHUD::BeginPlay()
 {
+	Super::BeginPlay();
+
 	if (!CrosshairTexture.ToString().IsEmpty())
 	{
 		CrosshairTex = CrosshairTexture.LoadSynchronous();
 	}
+
+	if (ScreenWidgetClass != NULL)
+	{
+		ScreenWidget = CreateWidget<UScreen_Widget>(GetWorld(), ScreenWidgetClass);
+
+		if (ScreenWidget != nullptr)
+		{
+			ScreenWidget->AddToViewport();
+		}
+	}
+}
+
+void ATaskHUD::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
 }
 
 void ATaskHUD::DrawHUD()
 {
 	Super::DrawHUD();
 
-	if (CrosshairTex)
+	if (GameState == nullptr)
 	{
-		// Draw a simple crosshair
+		GameState = (ACTF_GameState*)GetWorld()->GetGameState();
+	}
 
-		// find center of the Canvas
-		const FVector2D Center(Canvas->ClipX * 0.5f, Canvas->ClipY * 0.5f);
 
-		// offset by half the texture's dimensions so that the center of the texture aligns with the center of the Canvas
-		const FVector2D CrosshairDrawPosition((Center.X), (Center.Y + 20.0f));
+	if (CrosshairTex && GameState)
+	{
+		if(GameState->Time != 0)
+		{
+			if(bShowCursor)
+			{
+				// Draw a simple crosshair
 
-		// draw the crosshair
-		FCanvasTileItem TileItem(CrosshairDrawPosition, CrosshairTex->Resource, FLinearColor::White);
-		TileItem.BlendMode = SE_BLEND_Translucent;
-		Canvas->DrawItem(TileItem);
+				// find center of the Canvas
+				const FVector2D Center(Canvas->ClipX * 0.5f, Canvas->ClipY * 0.5f);
+
+				// offset by half the texture's dimensions so that the center of the texture aligns with the center of the Canvas
+				const FVector2D CrosshairDrawPosition((Center.X), (Center.Y + 20.0f));
+
+				// draw the crosshair
+				FCanvasTileItem TileItem(CrosshairDrawPosition, CrosshairTex->Resource, FLinearColor::White);
+				TileItem.BlendMode = SE_BLEND_Translucent;
+				Canvas->DrawItem(TileItem);
+			}
+		}
+	}
+}
+
+void ATaskHUD::ShowScreenUI(bool IsTrue)
+{
+	if (ScreenWidget != nullptr)
+	{
+		ScreenWidget->ShowUI(IsTrue);
+	}
+}
+
+void ATaskHUD::ShowScreenFlag(bool IsTrue)
+{
+	if (ScreenWidget != nullptr)
+	{
+		ScreenWidget->ShowFlag(IsTrue);
+	}
+}
+
+void ATaskHUD::ShowCursor(bool IsTrue)
+{
+	bShowCursor = IsTrue;
+}
+
+void ATaskHUD::UpdateHealth(float Health)
+{
+	if (ScreenWidget != nullptr)
+	{
+		ScreenWidget->UpdateHealth(Health);
 	}
 }
