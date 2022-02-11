@@ -15,6 +15,9 @@
 #include "TaskGameModeGameplay.h"
 #include "TaskHUD.h"
 #include "CTF_PlayerState.h"
+#include "CTF_Base.h"
+#include "CTF_Flag.h"
+#include "CTF_GameInstanceOnline.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogFPChar, Warning, All);
 
@@ -31,6 +34,7 @@ ACTFTaskCharacter::ACTFTaskCharacter()
 
 	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(55.f, 96.0f);
+	GetCapsuleComponent()->OnComponentHit.AddDynamic(this, &ACTFTaskCharacter::OnCompHit);
 
 	// set our turn rates for input
 	BaseTurnRate = 45.f;
@@ -567,5 +571,66 @@ void ACTFTaskCharacter::InitializePlayer()
 			TP_Ragdoll->SetMaterial(0, BlueBodyMaterial);
 			Flag_Prop->SetMaterial(0, RedFlagMaterial);
 		}
+	}
+}
+
+void ACTFTaskCharacter::OnCompHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
+{
+	if (GetLocalRole() == ROLE_Authority)
+	{
+		//Flag
+		ACTF_Flag* Flag = (ACTF_Flag* )OtherActor;
+		if (Flag != nullptr)
+		{
+			GameMode->PlayerFlagInteract(this, Flag);
+		}
+		//Base
+		ACTF_Base* Base = (ACTF_Base* )OtherActor;
+		if (Base != nullptr)
+		{
+			GameMode->PlayerBaseInteract(this, Base);
+		}
+
+	}
+}
+
+void ACTFTaskCharacter::OnFlagHeldChanged()
+{
+	FlagVisibility();
+}
+
+void ACTFTaskCharacter::FlagVisibility()
+{
+	Flag_Prop->SetVisibility(FlagHeld != nullptr);
+}
+
+void ACTFTaskCharacter::SetFlag(class ACTF_Flag* Flag)
+{
+	if (GetLocalRole() == ROLE_Authority)
+	{
+		FlagHeld = Flag;
+
+		FlagVisibility();
+	}
+}
+
+void ACTFTaskCharacter::GameEnded_Implementation()
+{
+	if (GetLocalRole() == ROLE_AutonomousProxy)
+	{
+		//Destroy session
+		UCTF_GameInstanceOnline* GameInstance = (UCTF_GameInstanceOnline* )GetGameInstance();
+
+		GameInstance->OnDestroySessionCompleteEvent.AddDynamic(this, &ACTFTaskCharacter::OnSessionEnded);
+
+		GameInstance->DestroySession();
+	}
+}
+
+void ACTFTaskCharacter::OnSessionEnded(bool Successful)
+{
+	if(Successful)
+	{
+		UGameplayStatics::OpenLevel(GetWorld(), FName("MainMenu"));
 	}
 }

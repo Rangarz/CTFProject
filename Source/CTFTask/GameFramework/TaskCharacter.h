@@ -136,6 +136,9 @@ public:
 	UPROPERTY(Replicated, VisibleAnywhere, BlueprintReadWrite, Category = Gameplay)
 	bool bCanShoot;
 
+	UPROPERTY(ReplicatedUsing = OnFlagHeldChanged, VisibleAnywhere, BlueprintReadOnly, Category = Gameplay)
+	class ACTF_Flag* FlagHeld;
+
 
 protected:
 	
@@ -195,7 +198,8 @@ public:
 	/** Returns FirstPersonCameraComponent subobject **/
 	FORCEINLINE class UCameraComponent* GetFirstPersonCameraComponent() const { return FirstPersonCameraComponent; }
 
-
+	UFUNCTION()
+	void OnCompHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
 	
 public:
 	//Projectile
@@ -259,5 +263,22 @@ public:
 
 	UFUNCTION()
 	void InitializePlayer();
+
+	UFUNCTION(Client, Reliable)
+	void GameEnded();
+
+	UFUNCTION()
+	void OnSessionEnded(bool Successful);
+	
+	//Flag
+
+	UFUNCTION()
+	void OnFlagHeldChanged();
+
+	UFUNCTION()
+	void FlagVisibility();
+
+	UFUNCTION()
+	void SetFlag(class ACTF_Flag* Flag);
 };
 

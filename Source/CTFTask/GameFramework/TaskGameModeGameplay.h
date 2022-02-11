@@ -28,10 +28,10 @@ public:
 	void InstanceReady();
 
 	//Flag Logic
-	void PlayerFlagInteract(AActor* Player, AActor* Flag);
+	void PlayerFlagInteract(class ACTFTaskCharacter* Player, class ACTF_Flag* Flag);
 
 	//Base Logic
-	void PlayerBaseInteract(AActor* Player, AActor* Base);
+	void PlayerBaseInteract(class ACTFTaskCharacter* Player, class ACTF_Base* Base);
 
 	//Game Flow Handling
 
