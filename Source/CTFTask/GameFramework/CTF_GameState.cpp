@@ -4,6 +4,8 @@
 #include "CTF_GameState.h"
 #include "Net/UnrealNetwork.h"
 #include "CTF_PlayerState.h"
+#include "TaskGameModeGameplay.h"
+
 
 ACTF_GameState::ACTF_GameState()
 {
@@ -26,20 +28,54 @@ void ACTF_GameState::AssignTeamStates()
 	if (PlayerArray.Num() == 2)
 	{
 		//We can start assigning teams
-
-	}
-	else
-	{
-		//This is an invalid number to start with
 		for (int i = 0; i < PlayerArray.Num(); i++)
 		{
 			ACTF_PlayerState* PS = (ACTF_PlayerState* )PlayerArray[i];
 			PS->IsTeamA = i == 0;
 		}
 	}
+	else
+	{
+		//This is an invalid number to start with
+	}
 }
 
 void ACTF_GameState::StartTimer()
 {
-
+	FTimerHandle UnusedHandle;
+	GetWorldTimerManager().SetTimer(UnusedHandle, this, &ACTF_GameState::PassTime, 1.0f, true);
 }
+
+void ACTF_GameState::PassTime()
+{
+	if(Time == 0)
+	{
+		//Game ended
+		ATaskGameModeGameplay* GameMode = (ATaskGameModeGameplay *)GetWorld()->GetAuthGameMode();
+		if(GameMode != nullptr)
+		{
+			GameMode->GameOverHandling();
+		}
+	}
+	else
+	{
+		Time--;
+	}
+}
+
+void ACTF_GameState::OnTimeChanged()
+{
+	OnTimeChangedEvent.Broadcast();
+}
+
+void ACTF_GameState::OnScoreAChanged()
+{
+	OnScoreAChangedEvent.Broadcast();
+}
+
+void ACTF_GameState::OnScoreBChanged()
+{
+	OnScoreBChangedEvent.Broadcast();
+}
+
+

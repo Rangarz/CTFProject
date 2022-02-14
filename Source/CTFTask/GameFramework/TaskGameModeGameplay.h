@@ -4,6 +4,9 @@
 
 #include "CoreMinimal.h"
 #include "TaskGameMode.h"
+#include "TaskCharacter.h"
+#include "CTF_Flag.h"
+#include "CTF_Base.h"
 #include "TaskGameModeGameplay.generated.h"
 
 /**
@@ -28,15 +31,24 @@ public:
 	void InstanceReady();
 
 	//Flag Logic
-	void PlayerFlagInteract(class ACTFTaskCharacter* Player, class ACTF_Flag* Flag);
+	void PlayerFlagInteract(ACTFTaskCharacter* Player, ACTF_Flag* Flag);
 
 	//Base Logic
-	void PlayerBaseInteract(class ACTFTaskCharacter* Player, class ACTF_Base* Base);
+	void PlayerBaseInteract(ACTFTaskCharacter* Player, ACTF_Base* Base);
 
 	//Game Flow Handling
 
 	void PlayersInitializeLocation();
-	void PlayerDeathHandling(class ACTFTaskCharacter* Player);
-	void PlayerRespawnHandling(class ACTFTaskCharacter* Player);
+	void PlayerDeathHandling(ACTFTaskCharacter* Player);
+	void PlayerRespawnHandling(ACTFTaskCharacter* Player);
 	void GameOverHandling();
+
+	UFUNCTION()
+	void CloseGame();
+
+	UFUNCTION()
+	void TerminateSession();
+
+	UFUNCTION()
+	void OnSessionEnded(bool Successful);
 };

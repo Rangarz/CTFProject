@@ -15,12 +15,13 @@ public:
 	// Sets default values for this actor's properties
 	ACTF_Flag();
 
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = Mesh)
 	class UStaticMeshComponent * FlagMesh;
 
 	UPROPERTY()
 	FTransform InitialTransform;
 
-	UPROPERTY()
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	bool IsTeamA;
 
 
@@ -39,10 +40,10 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	UFUNCTION(NetMulticast, Reliable)
-	void MulticastReturnFlag();
+	void ResetFlag();
 
 	UFUNCTION(NetMulticast, Reliable)
-	void MulticastEnableFlag(bool IsEnabled);
+	void EnableFlag(bool IsEnabled);
 
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastMoveToLocation(FVector Location);

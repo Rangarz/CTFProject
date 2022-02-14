@@ -5,10 +5,8 @@
 #include "TaskHUD.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "CTF_GameState.h"
-#include "TaskCharacter.h"
 #include "CTF_PlayerState.h"
-#include "CTF_Flag.h"
-#include "CTF_Base.h"
+#include "CTF_GameInstanceOnline.h"
 
 ATaskGameModeGameplay::ATaskGameModeGameplay() 
 {
@@ -87,7 +85,7 @@ void ATaskGameModeGameplay::PlayerDeathHandling(ACTFTaskCharacter* Player)
 		if(Player->FlagHeld != nullptr)
 		{
 			//Player have a flag
-			Player->FlagHeld->MulticastEnableFlag(true);
+			Player->FlagHeld->EnableFlag(true);
 			Player->FlagHeld->MulticastMoveToLocation(Player->GetActorLocation() + FVector(100,100,0));
 			Player->SetFlag(nullptr);
 			
@@ -122,36 +120,36 @@ void ATaskGameModeGameplay::PlayerRespawnHandling(class ACTFTaskCharacter* Playe
 		if (PS->IsTeamA)
 		{
 			//Teleport player to Team A's Spawn Point
-			Player->SetActorLocation(FVector(-1360, 1110, 200), false, nullptr, ETeleportType::TeleportPhysics);
+			Player->SetActorLocation(FVector(-1360, 1110, 200), false, nullptr, ETeleportType::None);
 		}
 		else
 		{
 			//Teleport player to Team B's Spawn Point
-			Player->SetActorLocation(FVector(1220.0, -1040, 200), false, nullptr, ETeleportType::TeleportPhysics);
+			Player->SetActorLocation(FVector(1220.0, -1040, 200), false, nullptr, ETeleportType::None);
 		}
 	}
 
 }
 
-void ATaskGameModeGameplay::PlayerFlagInteract(class ACTFTaskCharacter* Player, class ACTF_Flag* Flag)
+void ATaskGameModeGameplay::PlayerFlagInteract(ACTFTaskCharacter* Player, ACTF_Flag* Flag)
 {
 	//Get Player and Flag Team
 	ACTF_PlayerState* PS = (ACTF_PlayerState* )Player->GetPlayerState();
 	if(PS->IsTeamA == Flag->IsTeamA)
 	{
 		//Same Team, Caught own flag
-		Flag->MulticastReturnFlag();
+		Flag->ResetFlag();
 	}
 	else
 	{
 		//Opposite Team, Caught enemy flag
 		Player->SetFlag(Flag);
-		Flag->MulticastEnableFlag(false);
+		Flag->EnableFlag(false);
 	}
 	
 }
 
-void ATaskGameModeGameplay::PlayerBaseInteract(class ACTFTaskCharacter* Player, class ACTF_Base* Base)
+void ATaskGameModeGameplay::PlayerBaseInteract(ACTFTaskCharacter* Player, ACTF_Base* Base)
 {
 	ACTF_PlayerState* PS = (ACTF_PlayerState* )Player->GetPlayerState();
 	if(PS->IsTeamA == Base->IsTeamA)
@@ -179,8 +177,8 @@ void ATaskGameModeGameplay::PlayerBaseInteract(class ACTFTaskCharacter* Player, 
 						else
 						{
 							//Player doesn't have flag, we can score
-							Player->FlagHeld->MulticastReturnFlag();
-							Player->FlagHeld->MulticastEnableFlag(false);
+							Player->FlagHeld->ResetFlag();
+							Player->FlagHeld->EnableFlag(false);
 							Player->SetFlag(nullptr);
 
 							ACTF_GameState* ACTFGameState = (ACTF_GameState*)GetWorld()->GetGameState();
@@ -210,5 +208,65 @@ void ATaskGameModeGameplay::PlayerBaseInteract(class ACTFTaskCharacter* Player, 
 
 void ATaskGameModeGameplay::GameOverHandling()
 {
+	TArray<AActor*> FoundPlayers;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ACTFTaskCharacter::StaticClass(), FoundPlayers);
+
+	for (int i = 0; i < FoundPlayers.Num(); i++)
+	{
+		ACTFTaskCharacter* FoundPlayer = (ACTFTaskCharacter* )FoundPlayers[i];
+		if (FoundPlayer != nullptr)
+		{
+			FoundPlayer->GetCharacterMovement()->DisableMovement();
+			FoundPlayer->bCanShoot = false;
+		}
+	}
 	
+	FTimerHandle UnusedHandle;
+	GetWorldTimerManager().SetTimer(UnusedHandle, this, &ATaskGameModeGameplay::CloseGame, 3.0f, false);
+
 }
+
+void ATaskGameModeGameplay::CloseGame()
+{
+	TArray<AActor*> FoundPlayers;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ACTFTaskCharacter::StaticClass(), FoundPlayers);
+
+	for (int i = 0; i < FoundPlayers.Num(); i++)
+	{
+		ACTFTaskCharacter* FoundPlayer = (ACTFTaskCharacter* )FoundPlayers[i];
+		if (FoundPlayer != nullptr)
+		{
+			FoundPlayer->GameEnded();
+		}
+	}
+
+	FTimerHandle UnusedHandle;
+	GetWorldTimerManager().SetTimer(UnusedHandle, this, &ATaskGameModeGameplay::TerminateSession, 1.0f, true);
+}
+
+void ATaskGameModeGameplay::TerminateSession()
+{
+	if(GetNumPlayers() == 1)
+	{
+		//Destroy session
+		UCTF_GameInstanceOnline* GameInstance = (UCTF_GameInstanceOnline* )GetGameInstance();
+
+		if(GameInstance)
+		{
+			GameInstance->OnDestroySessionCompleteEvent.AddDynamic(this, &ATaskGameModeGameplay::OnSessionEnded);
+
+			GameInstance->DestroySession();
+		}
+	}
+}
+
+void ATaskGameModeGameplay::OnSessionEnded(bool Successful)
+{
+	if(Successful)
+	{
+		UGameplayStatics::OpenLevel(GetWorld(), FName("MainMenu"));
+	}
+}
+
+
+

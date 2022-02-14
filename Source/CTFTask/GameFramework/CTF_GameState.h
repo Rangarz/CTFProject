@@ -6,6 +6,10 @@
 #include "GameFramework/GameState.h"
 #include "CTF_GameState.generated.h"
 
+DECLARE_MULTICAST_DELEGATE(FCSOnTimeChanged);
+DECLARE_MULTICAST_DELEGATE(FCSOnScoreAChanged);
+DECLARE_MULTICAST_DELEGATE(FCSOnScoreBChanged);
+
 /**
  * 
  */
@@ -17,17 +21,16 @@ class CTFTASK_API ACTF_GameState : public AGameState
 
 public:
 	
-	UPROPERTY(Replicated, VisibleAnywhere, BlueprintReadOnly)
+	UPROPERTY(ReplicatedUsing=OnScoreAChanged, VisibleAnywhere, BlueprintReadOnly)
 	int TeamAScore;
 
-	UPROPERTY(Replicated, VisibleAnywhere, BlueprintReadOnly)
+	UPROPERTY(ReplicatedUsing=OnScoreBChanged, VisibleAnywhere, BlueprintReadOnly)
 	int TeamBScore;
 
-	UPROPERTY(Replicated, VisibleAnywhere, BlueprintReadOnly)
+	UPROPERTY(ReplicatedUsing=OnTimeChanged, VisibleAnywhere, BlueprintReadOnly)
 	int Time;
 
 public:
-	
 	ACTF_GameState();
 
 
@@ -36,6 +39,20 @@ public:
 	void StartTimer();
 
 
+	FCSOnTimeChanged OnTimeChangedEvent;
+	FCSOnScoreAChanged OnScoreAChangedEvent;
+	FCSOnScoreAChanged OnScoreBChangedEvent;
+	
 private:
+	UFUNCTION()
 	void PassTime();
+
+	UFUNCTION()
+	void OnTimeChanged();
+
+	UFUNCTION()
+	void OnScoreAChanged();
+
+	UFUNCTION()
+	void OnScoreBChanged();
 };

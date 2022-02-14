@@ -59,5 +59,14 @@ private:
 	UScreen_Widget* ScreenWidget;
 
 	class ACTF_GameState* GameState;
+
+	UFUNCTION()
+	void OnTimeChanged();
+
+	UFUNCTION()
+	void OnScoreAChanged();
+
+	UFUNCTION()
+	void OnScoreBChanged();
 };
 

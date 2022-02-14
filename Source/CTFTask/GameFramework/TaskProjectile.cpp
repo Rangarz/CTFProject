@@ -56,25 +56,28 @@ void ACTFTaskProjectile::BeginPlay()
 
 void ACTFTaskProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
-	ACTFTaskCharacter* TaskCharacter = Cast<ACTFTaskCharacter>(OtherActor);
-
-	if (OtherActor != NULL && TaskCharacter != NULL && TaskCharacter != ProjectileShooter)
+	if(OtherActor->GetClass()->IsChildOf(ACTFTaskCharacter::StaticClass()))
 	{
-		//Only projectiles spawned by server and on server will affect health
-		if(GetLocalRole() == ROLE_Authority && bFakeProjectile == false)
+		ACTFTaskCharacter* TaskCharacter = Cast<ACTFTaskCharacter>(OtherActor);
+
+		if (OtherActor != NULL && TaskCharacter != NULL && TaskCharacter != ProjectileShooter)
 		{
-			UKismetSystemLibrary::PrintString(this->GetWorld(), "Collided with player", true, true, FColor::Blue, 2.0f);
+			//Only projectiles spawned by server and on server will affect health
+			if(GetLocalRole() == ROLE_Authority && bFakeProjectile == false)
+			{
+				UKismetSystemLibrary::PrintString(this->GetWorld(), "Collided with player", true, true, FColor::Blue, 2.0f);
 
-			TaskCharacter->AddHealthPoints(-10.0f);
+				TaskCharacter->AddHealthPoints(-10.0f);
 
-			Destroy();
-		}
+				Destroy();
+			}
 
-		//If fake projectile hits character, must destroy
-		if (bFakeProjectile == true)
-		{
-			TaskCharacter->IsHit();
-			Destroy();
+			//If fake projectile hits character, must destroy
+			if (bFakeProjectile == true)
+			{
+				TaskCharacter->IsHit();
+				Destroy();
+			}
 		}
 	}
 	else

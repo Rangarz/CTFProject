@@ -42,12 +42,12 @@ void ACTF_Flag::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 }
 
-void ACTF_Flag::MulticastReturnFlag_Implementation()
+void ACTF_Flag::ResetFlag_Implementation()
 {
 	SetActorTransform(InitialTransform);
 }
 
-void ACTF_Flag::MulticastEnableFlag_Implementation(bool IsEnabled)
+void ACTF_Flag::EnableFlag_Implementation(bool IsEnabled)
 {
 	FlagMesh->SetVisibility(IsEnabled);
 

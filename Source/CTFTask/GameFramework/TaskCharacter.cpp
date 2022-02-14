@@ -157,18 +157,12 @@ void ACTFTaskCharacter::BeginPlay()
 		VR_Gun->SetHiddenInGame(true, true);
 		Mesh1P->SetHiddenInGame(false, true);
 	}
-
-	//Initialize GameMode
-	GameMode = (ATaskGameModeGameplay*)GetWorld()->GetAuthGameMode();
+	
 
 	if (IsLocallyControlled())
 	{
 		//Notify server that this player is ready
 		ServerPlayerIsReadyNotify();
-
-		//Get HUD
-		APlayerController* PC = UGameplayStatics::GetPlayerController(this, 0);
-		PlayerHud = (ATaskHUD* )PC->GetHUD();
 	}
 
 	InitializePlayer();
@@ -389,7 +383,11 @@ void ACTFTaskCharacter::OnHealthChanged()
 {
 	if (IsLocallyControlled())
 	{
-		PlayerHud->UpdateHealth(Health / 100.0f);
+		ATaskHUD* PlayerHud = (ATaskHUD* )UGameplayStatics::GetPlayerController(this, 0)->GetHUD();
+		if(PlayerHud)
+		{
+			PlayerHud->UpdateHealth(Health / 100.0f);
+		}
 
 		//Check if player is dead
 		if (Health <= 0.0f)
@@ -436,7 +434,8 @@ bool ACTFTaskCharacter::CanShoot()
 }
 
 void ACTFTaskCharacter::ServerPlayerIsReadyNotify_Implementation()
-{	
+{
+	ATaskGameModeGameplay* GameMode = (ATaskGameModeGameplay* )GetWorld()->GetAuthGameMode();
 	if(GameMode != nullptr)
 	{
 		GameMode->InstanceReady();
@@ -464,6 +463,7 @@ void ACTFTaskCharacter::LocalDeath(bool IsDead)
 
 	if (IsDead)
 	{
+		ATaskHUD* PlayerHud = (ATaskHUD* )UGameplayStatics::GetPlayerController(this, 0)->GetHUD();
 		if (PlayerHud != nullptr)
 		{
 			PlayerHud->ShowScreenUI(IsDead);
@@ -479,7 +479,8 @@ void ACTFTaskCharacter::RemoteDeath()
 	if (GetLocalRole() == ROLE_Authority)
 	{
 		//Tell game mode about this death
-		if (GameMode != nullptr)
+		ATaskGameModeGameplay* GameMode = (ATaskGameModeGameplay* )GetWorld()->GetAuthGameMode();
+		if(GameMode != nullptr)
 		{
 			GameMode->PlayerDeathHandling(this);
 		}
@@ -579,16 +580,31 @@ void ACTFTaskCharacter::OnCompHit(UPrimitiveComponent* HitComp, AActor* OtherAct
 	if (GetLocalRole() == ROLE_Authority)
 	{
 		//Flag
-		ACTF_Flag* Flag = (ACTF_Flag* )OtherActor;
-		if (Flag != nullptr)
+
+		if(OtherActor->GetClass()->IsChildOf(ACTF_Flag::StaticClass()))
 		{
-			GameMode->PlayerFlagInteract(this, Flag);
+			ACTF_Flag* Flag = (ACTF_Flag* )OtherActor;
+			if (Flag != nullptr)
+			{
+				ATaskGameModeGameplay* GameMode = (ATaskGameModeGameplay* )GetWorld()->GetAuthGameMode();
+				if(GameMode != nullptr)
+				{
+					GameMode->PlayerFlagInteract(this, Flag);
+				}
+			}
 		}
 		//Base
-		ACTF_Base* Base = (ACTF_Base* )OtherActor;
-		if (Base != nullptr)
+		if(OtherActor->GetClass()->IsChildOf(ACTF_Base::StaticClass()))
 		{
-			GameMode->PlayerBaseInteract(this, Base);
+			ACTF_Base* Base = (ACTF_Base* )OtherActor;
+			if (Base != nullptr)
+			{
+				ATaskGameModeGameplay* GameMode = (ATaskGameModeGameplay* )GetWorld()->GetAuthGameMode();
+				if(GameMode != nullptr)
+				{
+					GameMode->PlayerBaseInteract(this, Base);
+				}
+			}
 		}
 
 	}
@@ -620,10 +636,12 @@ void ACTFTaskCharacter::GameEnded_Implementation()
 	{
 		//Destroy session
 		UCTF_GameInstanceOnline* GameInstance = (UCTF_GameInstanceOnline* )GetGameInstance();
+		if(GameInstance != nullptr)
+		{
+			GameInstance->OnDestroySessionCompleteEvent.AddDynamic(this, &ACTFTaskCharacter::OnSessionEnded);
 
-		GameInstance->OnDestroySessionCompleteEvent.AddDynamic(this, &ACTFTaskCharacter::OnSessionEnded);
-
-		GameInstance->DestroySession();
+			GameInstance->DestroySession();
+		}
 	}
 }
 

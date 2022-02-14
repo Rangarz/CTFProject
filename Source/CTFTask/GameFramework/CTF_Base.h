@@ -15,9 +15,10 @@ public:
 	// Sets default values for this actor's properties
 	ACTF_Base();
 
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = Mesh)
 	class UStaticMeshComponent * BaseMesh;
 
-	UPROPERTY()
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	bool IsTeamA;
 
 

@@ -30,6 +30,15 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
 	class UProgressBar* HealthBar;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
+	class UTextBlock* TimeBox;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
+	class UTextBlock* ScoreAText;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
+	class UTextBlock* ScoreBText;
+
 	UFUNCTION()
 	void ShowUI(bool IsTrue);
 
@@ -38,4 +47,13 @@ public:
 
 	UFUNCTION()
 	void UpdateHealth(float Health);
+
+	UFUNCTION()
+	void ChangeTime(int Time);
+	
+	UFUNCTION()
+	void ChangeScoreA(int Score);
+
+	UFUNCTION()
+	void ChangeScoreB(int Score);
 };

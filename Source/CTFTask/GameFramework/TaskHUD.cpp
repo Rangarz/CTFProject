@@ -45,7 +45,14 @@ void ATaskHUD::DrawHUD()
 
 	if (GameState == nullptr)
 	{
+		//Setup one time only
 		GameState = (ACTF_GameState*)GetWorld()->GetGameState();
+		if(GameState != nullptr)
+		{
+			GameState->OnTimeChangedEvent.AddUObject(this, &ATaskHUD::OnTimeChanged);
+			GameState->OnScoreAChangedEvent.AddUObject(this, &ATaskHUD::OnScoreAChanged);
+			GameState->OnScoreBChangedEvent.AddUObject(this, &ATaskHUD::OnScoreBChanged);
+		}
 	}
 
 
@@ -100,3 +107,37 @@ void ATaskHUD::UpdateHealth(float Health)
 		ScreenWidget->UpdateHealth(Health);
 	}
 }
+
+void ATaskHUD::OnTimeChanged()
+{
+	if(ScreenWidget != nullptr)
+	{
+		if(GameState != nullptr)
+		{
+			ScreenWidget->ChangeTime(GameState->Time);
+		}
+	}
+}
+
+void ATaskHUD::OnScoreAChanged()
+{
+	if(ScreenWidget != nullptr)
+	{
+		if(GameState != nullptr)
+		{
+			ScreenWidget->ChangeScoreA(GameState->TeamAScore);
+		}
+	}
+}
+
+void ATaskHUD::OnScoreBChanged()
+{
+	if(ScreenWidget != nullptr)
+	{
+		if(GameState != nullptr)
+		{
+			ScreenWidget->ChangeScoreB(GameState->TeamBScore);
+		}
+	}
+}
+

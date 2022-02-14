@@ -39,11 +39,6 @@ class ACTFTaskCharacter : public ACharacter
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	class UMotionControllerComponent* L_MotionController;
 
-	UPROPERTY()
-	class ATaskHUD * PlayerHud;
-
-	UPROPERTY()
-	class ATaskGameModeGameplay* GameMode;
 
 public:
 	ACTFTaskCharacter();

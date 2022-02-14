@@ -3,6 +3,8 @@
 
 #include "Screen_Widget.h"
 
+#include <string>
+
 
 UScreen_Widget::UScreen_Widget(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
@@ -48,5 +50,29 @@ void UScreen_Widget::UpdateHealth(float Health)
 	if (HealthBar != nullptr)
 	{
 		HealthBar->SetPercent(Health);
+	}
+}
+
+void UScreen_Widget::ChangeTime(int Time)
+{
+	if(TimeBox != nullptr)
+	{
+		TimeBox->SetText(FText::FromString(FString::FromInt(Time)));
+	}
+}
+
+void UScreen_Widget::ChangeScoreA(int Score)
+{
+	if(ScoreAText != nullptr)
+	{
+		ScoreAText->SetText(FText::FromString(FString::FromInt(Score)));
+	}
+}
+
+void UScreen_Widget::ChangeScoreB(int Score)
+{
+	if(ScoreBText != nullptr)
+	{
+		ScoreBText->SetText(FText::FromString(FString::FromInt(Score)));
 	}
 }
