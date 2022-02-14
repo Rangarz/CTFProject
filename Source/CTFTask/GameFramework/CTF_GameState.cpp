@@ -32,6 +32,7 @@ void ACTF_GameState::AssignTeamStates()
 		{
 			ACTF_PlayerState* PS = (ACTF_PlayerState* )PlayerArray[i];
 			PS->IsTeamA = i == 0;
+			PS->OnTeamChanged();
 		}
 	}
 	else
@@ -60,6 +61,7 @@ void ACTF_GameState::PassTime()
 	else
 	{
 		Time--;
+		OnTimeChanged();
 	}
 }
 
@@ -77,5 +79,19 @@ void ACTF_GameState::OnScoreBChanged()
 {
 	OnScoreBChangedEvent.Broadcast();
 }
+
+void ACTF_GameState::AddScoreA()
+{
+	TeamAScore++;
+	OnScoreAChanged();
+}
+
+void ACTF_GameState::AddScoreB()
+{
+	TeamBScore++;
+	OnScoreBChanged();
+}
+
+
 
 

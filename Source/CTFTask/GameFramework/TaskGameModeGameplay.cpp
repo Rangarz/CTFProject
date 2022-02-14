@@ -24,7 +24,7 @@ void ATaskGameModeGameplay::InstanceReady()
 		//Add two seconds delay then start match
 
 		FTimerHandle UnusedHandle;
-		GetWorldTimerManager().SetTimer(UnusedHandle, this, &ATaskGameModeGameplay::StartCaptureTheFlag, 2.0f, false);
+		GetWorldTimerManager().SetTimer(UnusedHandle, this, &ATaskGameModeGameplay::StartCaptureTheFlag, 4.0f, false);
 	}
 }
 
@@ -187,11 +187,11 @@ void ATaskGameModeGameplay::PlayerBaseInteract(ACTFTaskCharacter* Player, ACTF_B
 							{
 								if(PS->IsTeamA)
 								{
-									ACTFGameState->TeamAScore++;
+									ACTFGameState->AddScoreA();
 								}
 								else
 								{
-									ACTFGameState->TeamBScore++;
+									ACTFGameState->AddScoreB();
 								}
 							}
 						}

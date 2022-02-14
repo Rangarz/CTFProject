@@ -42,6 +42,13 @@ public:
 	FCSOnTimeChanged OnTimeChangedEvent;
 	FCSOnScoreAChanged OnScoreAChangedEvent;
 	FCSOnScoreAChanged OnScoreBChangedEvent;
+
+
+	UFUNCTION()
+	void AddScoreA();
+
+	UFUNCTION()
+	void AddScoreB();
 	
 private:
 	UFUNCTION()
@@ -55,4 +62,5 @@ private:
 
 	UFUNCTION()
 	void OnScoreBChanged();
+	
 };
