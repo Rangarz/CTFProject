@@ -32,6 +32,9 @@ ACTFTaskCharacter::ACTFTaskCharacter()
 	//Player can shoot
 	bCanShoot = true;
 
+	//Set Health to initial value
+	Health = 100.0f;
+
 	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(55.f, 96.0f);
 	GetCapsuleComponent()->OnComponentHit.AddDynamic(this, &ACTFTaskCharacter::OnCompHit);
@@ -130,15 +133,13 @@ ACTFTaskCharacter::ACTFTaskCharacter()
 
 	// Uncomment the following line to turn motion controllers on by default:
 	//bUsingMotionControllers = true;
+	
 }
 
 void ACTFTaskCharacter::BeginPlay()
 {
 	// Call the base class  
 	Super::BeginPlay();
-
-	//Set Health to initial value
-	Health = 100.0f;
 
 	//Attach gun mesh component to Skeleton, doing it here because the skeleton is not yet created in the constructor
 	FP_Gun->AttachToComponent(Mesh1P, FAttachmentTransformRules(EAttachmentRule::SnapToTarget, true), TEXT("GripPoint"));
