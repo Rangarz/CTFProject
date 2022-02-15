@@ -21,7 +21,7 @@ private:
 	UTexture2D* CrosshairTex = nullptr;
 
 	UPROPERTY()
-	bool bShowCursor = false;
+	bool bShowCursor = true;
 
 protected:
 

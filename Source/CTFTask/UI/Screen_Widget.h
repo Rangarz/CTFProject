@@ -29,6 +29,9 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
 	class UProgressBar* HealthBar;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
+	class UImage* HealthImage;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
 	class UTextBlock* TimeBox;
@@ -56,4 +59,7 @@ public:
 
 	UFUNCTION()
 	void ChangeScoreB(int Score);
+
+	UFUNCTION()
+	void EnableEndScreen(FText text);
 };

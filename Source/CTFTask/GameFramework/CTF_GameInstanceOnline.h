@@ -18,7 +18,7 @@ DECLARE_MULTICAST_DELEGATE_OneParam(FCSOnJoinSessionComplete, EOnJoinSessionComp
  * 
  */
 UCLASS()
-class CTFTASK_API UCTF_GameInstanceOnline : public UGameInstanceSubsystem
+class CTFTASK_API UCTF_GameInstanceOnline : public UGameInstance
 {
 	GENERATED_BODY()
 

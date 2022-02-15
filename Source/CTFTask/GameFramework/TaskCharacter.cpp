@@ -462,14 +462,12 @@ void ACTFTaskCharacter::LocalDeath(bool IsDead)
 	Mesh1P->SetOwnerNoSee(IsDead);
 	FP_Gun->SetOwnerNoSee(IsDead);
 
-	if (IsDead)
+
+	ATaskHUD* PlayerHud = (ATaskHUD* )UGameplayStatics::GetPlayerController(this, 0)->GetHUD();
+	if (PlayerHud != nullptr)
 	{
-		ATaskHUD* PlayerHud = (ATaskHUD* )UGameplayStatics::GetPlayerController(this, 0)->GetHUD();
-		if (PlayerHud != nullptr)
-		{
-			PlayerHud->ShowScreenUI(IsDead);
-			PlayerHud->ShowCursor(IsDead);
-		}
+		PlayerHud->ShowScreenUI(!IsDead);
+		PlayerHud->ShowCursor(!IsDead);
 	}
 }
 /*This is what other remote clients see on character death including server*/
@@ -619,6 +617,12 @@ void ACTFTaskCharacter::OnFlagHeldChanged()
 void ACTFTaskCharacter::FlagVisibility()
 {
 	Flag_Prop->SetVisibility(FlagHeld != nullptr);
+	
+	ATaskHUD* PlayerHud = (ATaskHUD* )UGameplayStatics::GetPlayerController(this, 0)->GetHUD();
+	if(PlayerHud)
+	{
+		PlayerHud->ShowScreenFlag(FlagHeld != nullptr);
+	}
 }
 
 void ACTFTaskCharacter::SetFlag(class ACTF_Flag* Flag)

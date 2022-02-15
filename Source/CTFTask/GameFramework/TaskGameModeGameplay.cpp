@@ -98,12 +98,13 @@ void ATaskGameModeGameplay::PlayerDeathHandling(ACTFTaskCharacter* Player)
 		
 		//Respawn player in 3 seconds
 		FTimerHandle UnusedHandle;
-		GetWorldTimerManager().SetTimer(UnusedHandle, [&]() { this->PlayerRespawnHandling(Player); }, 3.0f, false);
+		FTimerDelegate RespawnDelegate = FTimerDelegate::CreateUObject(this, &ATaskGameModeGameplay::PlayerRespawnHandling, Player);
+		GetWorldTimerManager().SetTimer(UnusedHandle, RespawnDelegate, 3.0f, false);
 
 	}
 }
 
-void ATaskGameModeGameplay::PlayerRespawnHandling(class ACTFTaskCharacter* Player)
+void ATaskGameModeGameplay::PlayerRespawnHandling(ACTFTaskCharacter* Player)
 {
 	//Enable Movement
 	Player->GetCharacterMovement()->SetMovementMode(MOVE_Walking);

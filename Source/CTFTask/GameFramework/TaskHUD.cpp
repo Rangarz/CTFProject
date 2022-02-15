@@ -8,6 +8,7 @@
 #include "CanvasItem.h"
 #include "UObject/ConstructorHelpers.h"
 #include "CTF_GameState.h"
+#include "CTF_PlayerState.h"
 
 ATaskHUD::ATaskHUD()
 {
@@ -115,6 +116,43 @@ void ATaskHUD::OnTimeChanged()
 		if(GameState != nullptr)
 		{
 			ScreenWidget->ChangeTime(GameState->Time);
+
+			if(GameState->Time == 0)
+			{
+				ACTF_PlayerState* PS = (ACTF_PlayerState* )GetOwningPlayerController()->PlayerState;
+				if(PS != nullptr)
+				{
+					if(GameState->TeamAScore > GameState->TeamBScore)
+					{
+						//Team A Won
+						if(PS->IsTeamA)
+						{
+							ScreenWidget->EnableEndScreen(FText::FromString("You won!"));
+						}
+						else
+						{
+							ScreenWidget->EnableEndScreen(FText::FromString("You lost!"));
+						}
+					}
+					else if(GameState->TeamAScore < GameState->TeamBScore)
+					{
+						//Team B Won
+						if(PS->IsTeamA)
+						{
+							ScreenWidget->EnableEndScreen(FText::FromString("You lost!"));
+						}
+						else
+						{
+							ScreenWidget->EnableEndScreen(FText::FromString("You won!"));
+						}
+					}
+					else
+					{
+						//Its a tie
+						ScreenWidget->EnableEndScreen(FText::FromString("Tie!"));
+					}
+				}
+			}
 		}
 	}
 }

@@ -38,7 +38,15 @@ void ACTFTaskProjectile::BeginPlay()
 {
 	Super::BeginPlay();
 
+	//CollisionComp->SetVisibility(false,true);
 
+
+	//Show the real projectile if we aren't this player
+	if(bFakeProjectile != true && GetLocalRole() == ROLE_Authority)
+	{
+		CollisionComp->SetVisibility(true,true);
+	}
+	
 	//Only spawner of this projectile can check for collisions
 	if (GetLocalRole() != ROLE_Authority)
 	{

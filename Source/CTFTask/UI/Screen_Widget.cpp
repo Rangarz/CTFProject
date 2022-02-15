@@ -15,18 +15,19 @@ UScreen_Widget::UScreen_Widget(const FObjectInitializer& ObjectInitializer) : Su
 void UScreen_Widget::ShowUI(bool IsTrue)
 {
 	bUIIsOn = IsTrue;
-
-	if(EndScreen != nullptr)
-	{
-		EndScreen->SetVisibility(IsTrue ? ESlateVisibility::Visible : ESlateVisibility::Hidden);
-	}
+	
 	if(HealthBar != nullptr)
 	{
 		HealthBar->SetVisibility(IsTrue ? ESlateVisibility::Visible : ESlateVisibility::Hidden);
+		HealthImage->SetVisibility(IsTrue ? ESlateVisibility::Visible : ESlateVisibility::Hidden);
 	}
+	
 	if(FlagImage != nullptr)
 	{
-		FlagImage->SetVisibility(IsTrue ? ESlateVisibility::Visible : ESlateVisibility::Hidden);
+		if(IsTrue == false)
+		{
+			FlagImage->SetVisibility(ESlateVisibility::Hidden);
+		}
 	}
 }
 
@@ -75,4 +76,10 @@ void UScreen_Widget::ChangeScoreB(int Score)
 	{
 		ScoreBText->SetText(FText::FromString(FString::FromInt(Score)));
 	}
+}
+
+void UScreen_Widget::EnableEndScreen(FText text)
+{
+	EndScreen->SetVisibility(ESlateVisibility::Visible);
+	EndScreen->SetText(text);
 }
