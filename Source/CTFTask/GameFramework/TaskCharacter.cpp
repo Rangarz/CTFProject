@@ -425,7 +425,7 @@ void ACTFTaskCharacter::AddHealthPoints(float Amount)
 		{
 			Health += Amount;
 		}
-		HealthChangedCallback(Health);
+		OnHealthChanged();
 	}
 }
 

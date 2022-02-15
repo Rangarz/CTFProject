@@ -224,9 +224,6 @@ public:
 	UFUNCTION()
 	void OnHealthChanged();
 
-	UFUNCTION(BlueprintImplementableEvent)
-	void HealthChangedCallback(const float& NewHealth);
-
 	UFUNCTION(BlueprintCallable)
 	void AddHealthPoints(float Amount);
 
