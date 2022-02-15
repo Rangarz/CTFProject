@@ -177,6 +177,7 @@ void ACTFTaskCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
 	DOREPLIFETIME(ACTFTaskCharacter, CameraRotation);
 	DOREPLIFETIME(ACTFTaskCharacter, Health);
 	DOREPLIFETIME(ACTFTaskCharacter, bCanShoot);
+	DOREPLIFETIME(ACTFTaskCharacter, FlagHeld);
 }
 
 void ACTFTaskCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent)

@@ -178,7 +178,7 @@ void ATaskGameModeGameplay::PlayerBaseInteract(ACTFTaskCharacter* Player, ACTF_B
 						{
 							//Player doesn't have flag, we can score
 							Player->FlagHeld->ResetFlag();
-							Player->FlagHeld->EnableFlag(false);
+							Player->FlagHeld->EnableFlag(true);
 							Player->SetFlag(nullptr);
 
 							ACTF_GameState* ACTFGameState = (ACTF_GameState*)GetWorld()->GetGameState();
